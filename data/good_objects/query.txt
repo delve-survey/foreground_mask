@@ -1,0 +1,3 @@
+select coadd_object_id,ra,dec,mag_auto_i from y6a2_coadd_object_summary 
+where mag_auto_i < 22 and (mag_auto_g-mag_auto_r) 
+between -1 and 4 and (mag_auto_i-mag_auto_z) between -1 and 4

@@ -1,0 +1,4 @@
+select s.ra, s.dec, s.coadd_object_id, s.mu_mean_model_i, s.tilename, s.mag_auto_i, s.mag_auto_g, s.mag_auto_r, s.mag_auto_z, s.magerr_auto_g, s.magerr_auto_r, s.magerr_auto_i, s.magerr_auto_z,
+ov.psf_mag_g, ov.psf_mag_r, ov.psf_mag_i, ov.psf_mag_z, ov.bdf_mag_g, ov.bdf_mag_r, ov.bdf_mag_i, ov.bdf_mag_z, ov.psf_mag_err_g, ov.psf_mag_err_r, ov.psf_mag_err_i, ov.psf_mag_err_z, ov.bdf_mag_err_g, 
+ov.bdf_mag_err_r, ov.bdf_mag_err_i, ov.bdf_mag_err_z, s.imaflags_iso_g,s.imaflags_iso_r,s.imaflags_iso_i,s.imaflags_iso_z
+from y6a2_coadd_object_summary s inner join Y6A2_SOF_V2 ov on s.coadd_object_id=ov.coadd_object_id where s.mag_auto_i<25 and ov.BDF_MAG_I-s.MAG_AUTO_I<-1 and s.imaflags_iso_g=0 and s.imaflags_iso_r=0 and s.imaflags_iso_i=0 and s.imaflags_iso_z=0
