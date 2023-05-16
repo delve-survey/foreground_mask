@@ -1,0 +1,2 @@
+extinction/ebv_sfd98_fullres_nside_4096_ring_equatorial.fits filter=lfs diff=lfs merge=lfs -text
+2mass_stars/2MASS_faint_stars.fits filter=lfs diff=lfs merge=lfs -text
