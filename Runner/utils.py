@@ -5,6 +5,7 @@ import argparse
 from collections import OrderedDict as odict
 from tqdm import tqdm
 import joblib
+from astropy.io import fits
 
 
 
@@ -16,7 +17,7 @@ class RadiusMagRelation(object):
 
     def __call__(self, x):
 
-        self.interpolator(x)
+        return self.interpolator(x)
 
 
 
@@ -26,8 +27,8 @@ class MaskableObjects(object):
         
         #Possible names of RA and DEC in the catalogs.
         #We will search for these and standardize the column naming
-        self.possible_ra_names  = ['_RAJ2000',  'RA',  'RAJ2000',  'ra']
-        self.possible_dec_names = ['_DECJ2000', 'DEC', 'DECJ2000', 'dec']
+        self.possible_ra_names  = ['_RAJ2000', 'RA',  'RAJ2000',  'ra']
+        self.possible_dec_names = ['_DEJ2000', 'DEC', 'DECJ2000', 'dec']
 
         
         self.filename = filename
@@ -47,7 +48,7 @@ class MaskableObjects(object):
     def setup_catalog(self):
 
         # Extract data
-        hdu = fits.open(self.obj['filename'])
+        hdu = fits.open(self.filename)
         cat = hdu[1].data
 
         # Homogenize RA, DEC column names
@@ -57,7 +58,8 @@ class MaskableObjects(object):
                 cat.columns[r].name = 'raj2000'
                 cat.columns[d].name = 'decj2000'
 
-        cat.columns[self.mag].name = 'mag'
+        if self.mag is not None:
+            cat.columns[self.mag].name = 'mag'
 
         return cat
 
@@ -65,7 +67,7 @@ class MaskableObjects(object):
 
 class MakeMask(object):
 
-    def __init___(self, NSIDE, MaskableObjects, RadiusMagRelation):
+    def __init__(self, NSIDE, MaskableObjects, RadiusMagRelation):
 
         self.NSIDE = NSIDE
         self.obj   = MaskableObjects
@@ -75,12 +77,13 @@ class MakeMask(object):
     def process(self, verbose = False):
 
         bad_pixel = np.zeros(hp.nside2npix(self.NSIDE), dtype = bool)
-        if self.obj['mag'] is not None: 
+        
+        if self.obj.mag is None: 
             maskrad = self.obj.cat['radius']
             
         else:
             maskrad = self.maskrad(self.obj.cat['mag'])
-            maskrad = np.clip(maskrad, self.obj['minrad'], self.obj['maxrad'])
+            maskrad = np.clip(maskrad, self.obj.minrad, self.obj.maxrad)
 
         # Convert RA, DEC info to 3D position vector    
         vec = hp.ang2vec(self.obj.cat['raj2000'], self.obj.cat['decj2000'],lonlat=True)
@@ -88,7 +91,7 @@ class MakeMask(object):
         for i in np.arange(maskrad.size): #for each object in coarse footprint
 
             #check all pixels inside the avoidance radii + some cushion in high resolution
-            pixint=hp.query_disc(nside, vec[i,:], (maskrad[i] + self.obj['cushion']) * np.pi/180., inclusive = False)
+            pixint=hp.query_disc(self.NSIDE, vec[i,:], (maskrad[i] + self.obj.cushion) * np.pi/180., inclusive = False)
             bad_pixel[pixint] = True
 
         return bad_pixel
@@ -104,6 +107,7 @@ class SplitJoinParallel(object):
     def __init__(self, Runner, njobs = -1):
         
         self.Runner = Runner
+        self.obj    = self.Runner.obj
         self.njobs = njobs if njobs != -1 else joblib.externals.loky.cpu_count()
         
         self.Runner_list = self.split_run(self.Runner)
@@ -142,7 +146,6 @@ class SplitJoinParallel(object):
     
     def process(self):
         
-        start = dt.datetime.now()
         jobs = [joblib.delayed(self.single_run)(Runner) for Runner in self.Runner_list]
         with joblib.parallel_backend("loky"):
             outputs = joblib.Parallel(n_jobs = self.njobs, verbose=10)(jobs)
