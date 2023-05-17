@@ -63,7 +63,7 @@ class AllSkyRunner(object):
 
 
         (256, dict(name = 'Famous stars',
-                   filename = file_path + '/famous_stars/list_famous_stars_in_DES.fits',
+                   filename = file_path + '/famous_stars/bsc5p_bright_stars.fits',
                    interp   = None,
                    mag = None, m1 = None, m2 = None, r1 = None, r2 = None, maxrad = None, minrad = None, cushion = 30./3600.)),
                    
@@ -88,7 +88,7 @@ class AllSkyRunner(object):
                    maxrad = max(mass_faint_y), minrad = min(mass_faint_y), cushion = 5./3600.)),
 
 		(8,   dict(name = "Gaia mid stars (7.<G<11.5)",
-                   filename = file_path + '/gaia_stars/gaia_stars_mid.fits', #NEED TO UPDATE
+                   filename = file_path + '/gaia_stars/gaia_edr3_mid.fits',
                    interp   = gaia_mid_interp,
                    mag = 'PHOT_G_MEAN_MAG', m1 = min(gaia_mid_x), m2 = max(gaia_mid_x), r1 = 0.03, r2 = 0.008, 
                    maxrad = max(gaia_mid_y), minrad = min(gaia_mid_y), cushion = 5./3600.)),
@@ -106,7 +106,7 @@ class AllSkyRunner(object):
                    maxrad = max(yale_y), minrad = min(yale_y), cushion = .5/3600.)),
 
 		(1,   dict(name = "Gaia bright stars (G<7.)",
-                   filename = file_path + '/gaia_stars/gaia_stars_bright.fits', #NEED TO UPDATE
+                   filename = file_path + '/gaia_stars/gaia_edr3_bright.fits',
                    interp   = gaia_bright_interp,
                    mag = 'PHOT_G_MEAN_MAG', m1 = min(gaia_bright_x), m2 = max(gaia_bright_x), r1 = 0.03, r2 = 0.008, 
                    maxrad = max(gaia_bright_y), minrad = min(gaia_bright_y), cushion = .5/3600.))
