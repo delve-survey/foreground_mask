@@ -79,7 +79,10 @@ class MakeMask(object):
         bad_pixel = np.zeros(hp.nside2npix(self.NSIDE), dtype = bool)
         
         if self.obj.mag is None: 
-            maskrad = self.obj.cat['radius']
+            try:
+                maskrad = self.obj.cat['radius']
+            except:
+                maskrad = np.ones(len(self.obj.cat)) * self.obj.cushion # If we don't have a radius per object, then just use the cushion
             
         else:
             maskrad = self.maskrad(self.obj.cat['mag'])

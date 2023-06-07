@@ -54,7 +54,7 @@ class AllSkyRunner(object):
 
         (1024, dict(name = 'Stellar density',
                    filename = file_path + '/stellar_density/gaia_stellar_density_G21_equ_n128_v0.fits',
-                   upper_threshold = 3.6801315784454296, lower_threshold = -np.inf,
+                   upper_threshold = 3.044570751190183, lower_threshold = -np.inf,
                    mag = None, m1 = None, m2 = None, r1 = None, r2 = None, maxrad = None, minrad = None, cushion = None)),
         
         # (512, dict(name = "Total area",
@@ -71,10 +71,10 @@ class AllSkyRunner(object):
         #            filename = None,
         #            mag = None, m1 = None, m2 = None, r1 = None, r2 = None, maxrad = None, minrad = None, cushion = None)),
 
-# 		(64,  dict(name = 'Globular clusters',
-#                    filename = file_path + '/harris_globular_cluster_cat/harris_globclust_cat.fit',
-#                    interp   = None,
-#                    mag = None, m1 = None, m2 = None, r1 = None, r2 = None, maxrad = None, minrad = None, cushion = 5./3600.)),
+		(64,  dict(name = 'Globular clusters',
+                   filename = file_path + '/harris_globular_cluster_cat/harris_globclust_cat_reformatted.fit',
+                   interp   = None,
+                   mag = None, m1 = None, m2 = None, r1 = None, r2 = None, maxrad = None, minrad = None, cushion = 0.5)),
 
 		(32,  dict(name = "Large nearby galaxy (HyperLEDA catalog)",
                    filename = file_path + '/hyperleda_db/kiyan_leda_galaxies.fits',
