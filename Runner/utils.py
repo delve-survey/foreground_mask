@@ -151,7 +151,7 @@ class SplitJoinParallel(object):
         
         jobs = [joblib.delayed(self.single_run)(Runner) for Runner in self.Runner_list]
         with joblib.parallel_backend("loky"):
-            outputs = joblib.Parallel(n_jobs = self.njobs, verbose=10)(jobs)
+            outputs = joblib.Parallel(n_jobs = self.njobs, verbose=10, max_nbytes = None)(jobs) #I had to set max_nbytes = None to get this to work on Midway3.
 
         #Start by saying all pixels are NOT bad  pixels.
         #Then go through each map and add in pixel masking

@@ -6,15 +6,19 @@ from collections import OrderedDict as odict
 from tqdm import tqdm
 from utils import RadiusMagRelation, MaskableObjects, MakeMask, SplitJoinParallel
 import os
-
+import argparse
 
 class AllSkyRunner(object):
 
-    def __init__(self, NSIDE = 4096):
+    def __init__(self, NSIDE, max_ext, max_star):
 
-        self.NSIDE = NSIDE
-        self.bits  = self.setup_data()
+        self.max_ext  = max_ext
+        self.max_star = max_star
+        self.NSIDE    = NSIDE
 
+        self.bits = self.setup_data()
+        
+        
 
     def setup_data(self):
 
@@ -49,12 +53,12 @@ class AllSkyRunner(object):
         FOREGROUND_BITS = odict([
 		(2048, dict(name = 'Dust Extinction',
                    filename = file_path + '/extinction/ebv_sfd98_fullres_nside_4096_ring_equatorial.fits',
-                   upper_threshold = 0.09655683845281593, lower_threshold = -np.inf,
+                   upper_threshold = self.max_ext, lower_threshold = -np.inf,
                    mag = None, m1 = None, m2 = None, r1 = None, r2 = None, maxrad = None, minrad = None, cushion = None)),
 
         (1024, dict(name = 'Stellar density',
                    filename = file_path + '/stellar_density/gaia_stellar_density_G21_equ_n128_v0.fits',
-                   upper_threshold = 3.044570751190183, lower_threshold = -np.inf,
+                   upper_threshold = self.max_star, lower_threshold = -np.inf,
                    mag = None, m1 = None, m2 = None, r1 = None, r2 = None, maxrad = None, minrad = None, cushion = None)),
         
         # (512, dict(name = "Total area",
@@ -147,12 +151,30 @@ class AllSkyRunner(object):
 
 
 if __name__ == '__main__':
+    
+    
+    my_parser = argparse.ArgumentParser()
+
+    #Metaparams
+    my_parser.add_argument('--max_extinction',   action='store', type = float, required = True)
+    my_parser.add_argument('--max_stardensity',  action='store', type = float, required = True)
+    my_parser.add_argument('--output_file_path', action='store', type = str, required = True)
+    
+    args  = vars(my_parser.parse_args())
+    
+    
+    #Print args for debugging state
+    print('-------INPUT PARAMS----------')
+    for p in args.keys():
+        print('%s : %s'%(p.upper(), args[p]))
+    print('-----------------------------')
+    print('-----------------------------')
 
 
-    X = AllSkyRunner(NSIDE = 4096)
+    X = AllSkyRunner(NSIDE = 4096, max_ext = args['max_extinction'], max_star = args['max_stardensity'])
     m = X.process()
 
-    hp.write_map('/scratch/midway2/dhayaa/Foreground_Mask_Allsky.fits', m, overwrite = True, dtype = np.int16)
+    hp.write_map(args['output_file_path'], m, overwrite = True, dtype = np.int16)
 
         
     
