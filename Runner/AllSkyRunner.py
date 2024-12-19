@@ -10,10 +10,12 @@ import argparse
 
 class AllSkyRunner(object):
 
-    def __init__(self, NSIDE, max_ext, max_star):
+    def __init__(self, NSIDE, max_ext, max_star, rad_LMC = 5.3667, rad_SMC = 2.667):
 
         self.max_ext  = max_ext
         self.max_star = max_star
+        self.rad_LMC  = rad_LMC
+        self.rad_SMC  = rad_SMC
         self.NSIDE    = NSIDE
 
         self.bits = self.setup_data()
@@ -71,9 +73,9 @@ class AllSkyRunner(object):
                    interp   = None,
                    mag = None, m1 = None, m2 = None, r1 = None, r2 = None, maxrad = None, minrad = None, cushion = 30./3600.)),
                    
-		# (128, dict(name = "Near the LMC",
-        #            filename = None,
-        #            mag = None, m1 = None, m2 = None, r1 = None, r2 = None, maxrad = None, minrad = None, cushion = None)),
+		(128, dict(name = "Near the LMC and SMC",
+                   filename = None,
+                   mag = None, m1 = None, m2 = None, r1 = None, r2 = None, maxrad = None, minrad = None, cushion = None)),
 
 		(64,  dict(name = 'Globular clusters',
                    filename = file_path + '/harris_globular_cluster_cat/harris_globclust_cat_reformatted.fit',
@@ -125,7 +127,7 @@ class AllSkyRunner(object):
 
         for bit, data in self.bits.items():
 
-            if bit < 512:
+            if (bit < 512) & (bit != 128):
 
                 name    = data.pop('name')
                 maskrad = data.pop('interp')
@@ -138,6 +140,14 @@ class AllSkyRunner(object):
                 
                 bad_pix = Runner.process()
                 bad_pix = np.where(bad_pix, bit, 0)
+
+            elif bit == 128:
+
+                bad_ind = np.concatenate([hp.query_disc(self.NSIDE, hp.ang2vec(80.8939, -69.7561, lonlat = True), self.rad_LMC * np.pi/180),
+                                          hp.query_disc(self.NSIDE, hp.ang2vec(13.1867, -72.8286, lonlat = True), self.rad_SMC * np.pi/180)
+                                          ])
+                bad_pix = np.zeros_like(map)
+                bad_pix[bad_ind] = bit
 
             elif bit >= 1024:
 
@@ -158,7 +168,9 @@ if __name__ == '__main__':
     #Metaparams
     my_parser.add_argument('--max_extinction',   action='store', type = float, required = True)
     my_parser.add_argument('--max_stardensity',  action='store', type = float, required = True)
-    my_parser.add_argument('--output_file_path', action='store', type = str, required = True)
+    my_parser.add_argument('--rad_LMC',          action='store', type = float, required = True)
+    my_parser.add_argument('--rad_SMC',          action='store', type = float, required = True)
+    my_parser.add_argument('--output_file_path', action='store', type = str,   required = True)
     
     args  = vars(my_parser.parse_args())
     
@@ -171,7 +183,8 @@ if __name__ == '__main__':
     print('-----------------------------')
 
 
-    X = AllSkyRunner(NSIDE = 4096, max_ext = args['max_extinction'], max_star = args['max_stardensity'])
+    X = AllSkyRunner(NSIDE = 4096, max_ext = args['max_extinction'], max_star = args['max_stardensity'], 
+                     rad_LMC = args['rad_LMC'], rad_SMC = args['rad_SMC'])
     m = X.process()
 
     hp.write_map(args['output_file_path'], m, overwrite = True, dtype = np.int16)
